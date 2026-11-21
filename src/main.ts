@@ -12,7 +12,7 @@ app.innerHTML = `
   <header class="top">
     <div>
       <p class="mark">Pattern Engine</p>
-      <p class="sub">seed ${recipe.seed} · circle packing · plain dots</p>
+      <p class="sub">seed ${recipe.seed} · circle packing · weighted shapes</p>
     </div>
   </header>
   <main class="stage">

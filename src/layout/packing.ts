@@ -78,7 +78,8 @@ export function packCircles(
       const y = minY + rng.next() * spanY;
       if (maxX < minX || maxY < minY) continue;
       if (!recipe.allowOverlap && hits(x, y, radius, occupied, recipe.packing.padding)) continue;
-      const primitives = shapeGeometry({
+      const built = shapeGeometry({
+        id: shape,
         x,
         y,
         r: radius,
@@ -91,7 +92,7 @@ export function packCircles(
       tally[shape] += 1;
       tally.screws = screwCount.value;
       occupied.push({ x, y, r: radius });
-      placed.push({ id: shape, x, y, r: radius, primitives });
+      placed.push({ id: shape, x, y, r: radius, primitives: built.primitives, screws: built.screws });
     }
   }
   return placed;

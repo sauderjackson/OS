@@ -30,7 +30,7 @@ export function defaultRecipe(): Recipe {
     layout: 'packing',
     paletteId: STEP_PALETTE.id,
     palette: { ...STEP_PALETTE },
-    weights: { driver: 0, grille: 0, tweeter: 0, port: 0, screws: 0, dot: 100 },
+    weights: { driver: 34, grille: 18, tweeter: 16, port: 12, screws: 55, dot: 20 },
     maxCounts: { driver: 10, grille: 8, tweeter: 12, port: 6, screws: 8, dot: 48 },
     margin: 72,
     sizeSteps: [16, 32, 64, 128, 256],

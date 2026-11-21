@@ -18,8 +18,9 @@ export function drawScene(
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   for (let i = 0; i < scene.shapes.length; i++) {
-    const prims = scene.shapes[i].primitives;
-    for (let p = 0; p < prims.length; p++) drawPrimitive(ctx, prims[p]);
+    const shape = scene.shapes[i];
+    for (let p = 0; p < shape.primitives.length; p++) drawPrimitive(ctx, shape.primitives[p]);
+    for (let p = 0; p < shape.screws.length; p++) drawPrimitive(ctx, shape.screws[p]);
   }
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 }

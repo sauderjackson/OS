@@ -61,7 +61,9 @@ export interface PlacedShape {
   x: number;
   y: number;
   r: number;
+  /** Body geometry. Screws, when present, are a separate list so SVG can group them. */
   primitives: Primitive[];
+  screws: Primitive[];
 }
 
 export interface Scene {
