@@ -1,5 +1,7 @@
+import { PRESET_PALETTES } from '../src/palettes/presets';
 import { generateScene } from '../src/scene';
-import { defaultRecipe } from '../src/recipe';
+import { defaultRecipe, normalizeRecipe } from '../src/recipe';
+import { rerollRecipe } from '../src/reroll';
 import type { PlacedShape } from '../src/types';
 
 function fingerprint(scene: ReturnType<typeof generateScene>): string {
@@ -54,9 +56,45 @@ generateScene(recipe);
 const elapsed = performance.now() - started;
 if (elapsed > 1000) throw new Error(`generation took ${elapsed.toFixed(1)}ms`);
 
+if (PRESET_PALETTES.length !== 8) throw new Error('expected 8 palettes');
+if (a.background !== '#F3EDE3') throw new Error('default palette should be Braun Cream');
+const midnight = PRESET_PALETTES.find((palette) => palette.id === 'midnight-car-audio');
+if (!midnight) throw new Error('missing midnight palette');
+const dyed = generateScene({ ...recipe, paletteId: midnight.id, palette: { ...midnight } });
+if (dyed.background !== midnight.background) throw new Error('palette did not reach the scene');
+if (fingerprint(dyed) === fingerprint(a)) throw new Error('palette change should change the image');
+
 const prims = a.shapes.reduce((n, shape) => n + shape.primitives.length + shape.screws.length, 0);
 console.log(`shapes ${a.shapes.length}`);
 console.log(`primitives ${prims}`);
 console.log(`ids ${[...seen].join(',')}`);
+const roundTrip = normalizeRecipe(JSON.parse(JSON.stringify(recipe)));
+if (fingerprint(generateScene(roundTrip)) !== fingerprint(a)) throw new Error('recipe normalize changed the image');
+
+let cursor = 0;
+const locked = defaultRecipe();
+locked.locks = { palette: true, layout: true };
+locked.layout = 'grid';
+locked.palette = { ...locked.palette, background: '#123456' };
+const lockedRoll = rerollRecipe(locked, () => {
+  cursor += 1;
+  return 0.2;
+});
+if (cursor !== 1) throw new Error('locks should only draw a new seed');
+if (lockedRoll.layout !== 'grid' || lockedRoll.palette.background !== '#123456') {
+  throw new Error('locks did not hold');
+}
+
+cursor = 0;
+const openRoll = rerollRecipe(defaultRecipe(), () => {
+  const values = [0.25, 0.5, 0.99];
+  const value = values[cursor] ?? 0;
+  cursor += 1;
+  return value;
+});
+if (openRoll.paletteId !== 'mono-ink') throw new Error(`expected mono-ink, got ${openRoll.paletteId}`);
+if (openRoll.layout !== 'hero') throw new Error(`expected hero, got ${openRoll.layout}`);
+if (openRoll.seed === 1) throw new Error('reroll should change the seed');
+
 console.log(`ms ${elapsed.toFixed(2)}`);
 console.log('verify ok');
