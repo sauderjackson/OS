@@ -1,0 +1,23 @@
+{
+  "name": "pattern-engine",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "verify": "tsx scripts/verify.ts"
+  },
+  "dependencies": {
+    "jszip": "^3.10.1",
+    "p5": "^1.11.3"
+  },
+  "devDependencies": {
+    "@types/p5": "^1.7.7",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
+  }
+}

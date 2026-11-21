@@ -1,0 +1,60 @@
+:root {
+  color: #1c1915;
+  background: #d8d2c6;
+  font-family: 'Familjen Grotesk', 'Avenir Next', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app {
+  margin: 0;
+  height: 100%;
+}
+
+#app {
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  padding: 22px 28px 8px;
+}
+
+.mark {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 680;
+  letter-spacing: -0.04em;
+}
+
+.sub {
+  margin: 4px 0 0;
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.stage {
+  display: grid;
+  place-items: center;
+  padding: 12px 28px 28px;
+  min-height: 0;
+}
+
+.frame {
+  width: min(100%, calc((100dvh - 140px) * (var(--ar, 1))));
+  max-height: calc(100dvh - 140px);
+  aspect-ratio: var(--ar, 1);
+  background: #111;
+  box-shadow: 0 18px 50px rgba(40, 32, 22, 0.18);
+}
+
+.frame canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
