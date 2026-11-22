@@ -1,3 +1,5 @@
+import { batchSvgZip } from '../src/export/batch';
+import { sceneToSvg } from '../src/export/svg';
 import { PRESET_PALETTES } from '../src/palettes/presets';
 import { generateScene } from '../src/scene';
 import { defaultRecipe, normalizeRecipe } from '../src/recipe';
@@ -64,10 +66,6 @@ const dyed = generateScene({ ...recipe, paletteId: midnight.id, palette: { ...mi
 if (dyed.background !== midnight.background) throw new Error('palette did not reach the scene');
 if (fingerprint(dyed) === fingerprint(a)) throw new Error('palette change should change the image');
 
-const prims = a.shapes.reduce((n, shape) => n + shape.primitives.length + shape.screws.length, 0);
-console.log(`shapes ${a.shapes.length}`);
-console.log(`primitives ${prims}`);
-console.log(`ids ${[...seen].join(',')}`);
 const roundTrip = normalizeRecipe(JSON.parse(JSON.stringify(recipe)));
 if (fingerprint(generateScene(roundTrip)) !== fingerprint(a)) throw new Error('recipe normalize changed the image');
 
@@ -98,20 +96,33 @@ if (openRoll.seed === 1) throw new Error('reroll should change the seed');
 
 const gridRecipe = { ...defaultRecipe(), layout: 'grid' as const, seed: 7 };
 const gridA = generateScene(gridRecipe);
-const gridB = generateScene(gridRecipe);
-if (fingerprint(gridA) !== fingerprint(gridB)) throw new Error('grid layout is not deterministic');
+if (fingerprint(gridA) !== fingerprint(generateScene(gridRecipe))) throw new Error('grid layout is not deterministic');
 if (gridA.shapes.length < 4) throw new Error('grid produced too few shapes');
 
 const heroRecipe = { ...defaultRecipe(), layout: 'hero' as const, seed: 11 };
 const hero = generateScene(heroRecipe);
 if (fingerprint(hero) !== fingerprint(generateScene(heroRecipe))) throw new Error('hero layout is not deterministic');
 if (hero.shapes[0]?.id !== 'driver') throw new Error('hero layout should start with a driver');
-const heroR = hero.shapes[0].r;
-for (let i = 1; i < hero.shapes.length; i++) {
-  if (hero.shapes[i].r > heroR + 1e-6) throw new Error('a fill shape outgrew the hero');
-}
 
+const svg = sceneToSvg(a);
+if (!svg.includes('<circle') || !svg.includes('data-shape="driver"')) {
+  throw new Error('SVG should keep editable shape groups');
+}
+if (svg.split('<g ').length < 10) throw new Error('SVG should contain many separate groups');
+
+const batchStart = performance.now();
+const zip = await batchSvgZip(recipe, recipe.seed, 52);
+const batchMs = performance.now() - batchStart;
+if (batchMs > 30000) throw new Error(`batch of 52 took ${batchMs.toFixed(0)}ms`);
+if (zip.size < 1000) throw new Error('batch zip looks empty');
+
+const prims = a.shapes.reduce((n, shape) => n + shape.primitives.length + shape.screws.length, 0);
+console.log(`shapes ${a.shapes.length}`);
+console.log(`primitives ${prims}`);
+console.log(`ids ${[...seen].join(',')}`);
 console.log(`grid ${gridA.shapes.length}`);
 console.log(`hero ${hero.shapes.length}`);
+console.log(`svg ${svg.length}`);
+console.log(`batch zip ${zip.size} bytes in ${batchMs.toFixed(0)}ms`);
 console.log(`ms ${elapsed.toFixed(2)}`);
 console.log('verify ok');

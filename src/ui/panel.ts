@@ -17,6 +17,11 @@ export interface PanelHandlers {
   onReroll(): void;
   onPrev(): void;
   onNext(): void;
+  onExportSvg(): void;
+  onExportPng(): void;
+  onExportBatch(count: number): void;
+  onSaveRecipe(): void;
+  onLoadRecipe(file: File): void;
 }
 
 export interface PanelApi {
@@ -72,6 +77,23 @@ export function mountPanel(host: HTMLElement, initial: Recipe, handlers: PanelHa
         <label class="check"><input data-stroke type="checkbox" /> Stroke instead of fill</label>
         <label class="line"><span>Stroke</span><input data-stroke-weight type="range" min="1" max="48" step="1" /><b data-stroke-read></b></label>
         <label class="line"><span>Rings</span><select data-rings></select></label>
+      </section>
+      <section>
+        <h2>Export</h2>
+        <div class="row">
+          <button type="button" data-svg>SVG</button>
+          <button type="button" data-png>PNG</button>
+        </div>
+        <label class="line"><span>Batch N</span><input data-batch-count type="number" min="1" max="200" step="1" value="52" /></label>
+        <div class="row">
+          <button type="button" data-batch>Generate N</button>
+        </div>
+        <div class="row">
+          <button type="button" data-save-recipe>Save recipe</button>
+          <button type="button" data-load-recipe>Load recipe</button>
+          <input data-recipe-file type="file" accept="application/json,.json" hidden />
+        </div>
+        <p class="hint">Batch is inclusive: seed … seed+N−1 as SVG zip. S = SVG, P = PNG.</p>
       </section>
       <p class="status" data-status></p>
       <p class="hint">R rerolls. Left and right arrows step the seed. Shortcuts pause while a field is focused.</p>
@@ -362,6 +384,20 @@ export function mountPanel(host: HTMLElement, initial: Recipe, handlers: PanelHa
   host.querySelector<HTMLButtonElement>('[data-reroll]')!.addEventListener('click', handlers.onReroll);
   host.querySelector<HTMLButtonElement>('[data-prev]')!.addEventListener('click', handlers.onPrev);
   host.querySelector<HTMLButtonElement>('[data-next]')!.addEventListener('click', handlers.onNext);
+  host.querySelector<HTMLButtonElement>('[data-svg]')!.addEventListener('click', handlers.onExportSvg);
+  host.querySelector<HTMLButtonElement>('[data-png]')!.addEventListener('click', handlers.onExportPng);
+  host.querySelector<HTMLButtonElement>('[data-batch]')!.addEventListener('click', () => {
+    const count = clampInt(host.querySelector<HTMLInputElement>('[data-batch-count]')!.value, 1, 200, 52);
+    handlers.onExportBatch(count);
+  });
+  host.querySelector<HTMLButtonElement>('[data-save-recipe]')!.addEventListener('click', handlers.onSaveRecipe);
+  const recipeFile = host.querySelector<HTMLInputElement>('[data-recipe-file]')!;
+  host.querySelector<HTMLButtonElement>('[data-load-recipe]')!.addEventListener('click', () => recipeFile.click());
+  recipeFile.addEventListener('change', () => {
+    const file = recipeFile.files?.[0];
+    if (file) handlers.onLoadRecipe(file);
+    recipeFile.value = '';
+  });
 
   write();
 
