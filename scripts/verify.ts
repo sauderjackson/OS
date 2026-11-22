@@ -96,5 +96,22 @@ if (openRoll.paletteId !== 'mono-ink') throw new Error(`expected mono-ink, got $
 if (openRoll.layout !== 'hero') throw new Error(`expected hero, got ${openRoll.layout}`);
 if (openRoll.seed === 1) throw new Error('reroll should change the seed');
 
+const gridRecipe = { ...defaultRecipe(), layout: 'grid' as const, seed: 7 };
+const gridA = generateScene(gridRecipe);
+const gridB = generateScene(gridRecipe);
+if (fingerprint(gridA) !== fingerprint(gridB)) throw new Error('grid layout is not deterministic');
+if (gridA.shapes.length < 4) throw new Error('grid produced too few shapes');
+
+const heroRecipe = { ...defaultRecipe(), layout: 'hero' as const, seed: 11 };
+const hero = generateScene(heroRecipe);
+if (fingerprint(hero) !== fingerprint(generateScene(heroRecipe))) throw new Error('hero layout is not deterministic');
+if (hero.shapes[0]?.id !== 'driver') throw new Error('hero layout should start with a driver');
+const heroR = hero.shapes[0].r;
+for (let i = 1; i < hero.shapes.length; i++) {
+  if (hero.shapes[i].r > heroR + 1e-6) throw new Error('a fill shape outgrew the hero');
+}
+
+console.log(`grid ${gridA.shapes.length}`);
+console.log(`hero ${hero.shapes.length}`);
 console.log(`ms ${elapsed.toFixed(2)}`);
 console.log('verify ok');
